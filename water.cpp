@@ -41,6 +41,20 @@ int cal_peak(vector<vector<int>> list){
     return temp_max_index;
 }
 
+float cal_avg(vector<vector<int>> list){
+
+    int sum = 0;
+
+    for(int i = 1; i < list.size(); i++){
+        for(int j = 0; j < 6; j++){
+            sum += list[i][j + HOUR_OFFSET];
+        }
+    }
+
+    return sum / ((list.size() - 1) * 6);
+}
+
+
 int main(int argc, char* argv[]){
     rapidcsv::Document water("Water.csv", rapidcsv::LabelParams(-1, -1));
     vector<vector<int>> usage_stats;
@@ -49,5 +63,7 @@ int main(int argc, char* argv[]){
     }
     
     int peak_hour = cal_peak(usage_stats); //Calculated based of the whole year usage
+    float avg_usage = cal_avg(usage_stats); //Calculated based of the whole year average
     
+        
 }
