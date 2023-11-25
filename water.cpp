@@ -18,7 +18,7 @@ int cal_peak(vector<vector<int>> list){
     int temp_max = 0;
     int temp_max_index = 0;
 
-    for(int i = 0; i < list.size(); i++){
+    for(int i = 1; i < list.size(); i++){
         temp_max = list[i][0 + HOUR_OFFSET];
         temp_max_index = 0;
         for(int j = 0; j < 6; j++){
@@ -37,18 +37,17 @@ int cal_peak(vector<vector<int>> list){
             temp_max_index = i;
         }
     }
-    
+
     return temp_max_index;
 }
 
-
-int main(){
+int main(int argc, char* argv[]){
     rapidcsv::Document water("Water.csv", rapidcsv::LabelParams(-1, -1));
     vector<vector<int>> usage_stats;
     for(int i = 1; i <= 360; i++){
         usage_stats.push_back(water.GetRow<int>(i));
     }
     
-    int peak_hour = cal_peak(usage_stats);
+    int peak_hour = cal_peak(usage_stats); //Calculated based of the whole year usage
     
 }
