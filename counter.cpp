@@ -62,10 +62,10 @@ vector<float> cal_avg(vector<vector<int>> list){
 
 
 int main(int argc, char* argv[]){
-    rapidcsv::Document water("Water.csv", rapidcsv::LabelParams(-1, -1));
+    rapidcsv::Document counter(argv[1], rapidcsv::LabelParams(-1, -1));
     vector<vector<int>> usage_stats;
     for(int i = 1; i <= 360; i++){
-        usage_stats.push_back(water.GetRow<int>(i));
+        usage_stats.push_back(counter.GetRow<int>(i));
     }
     
     int peak_hour = cal_peak(usage_stats);              //Calculated based of the whole year usage
