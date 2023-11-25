@@ -9,6 +9,7 @@
 #include "rapidcsv.h"
 
 #define HOUR_OFFSET 3
+#define DAY_OFFSET 2
 
 using namespace std;
 
@@ -41,17 +42,22 @@ int cal_peak(vector<vector<int>> list){
     return temp_max_index;
 }
 
-float cal_avg(vector<vector<int>> list){
+vector<float> cal_avg(vector<vector<int>> list){
 
-    int sum = 0;
+    vector<float> avg_per_month;
+    float sum = 0;
 
     for(int i = 1; i < list.size(); i++){
         for(int j = 0; j < 6; j++){
             sum += list[i][j + HOUR_OFFSET];
         }
+        if(list[i][DAY_OFFSET] == 30){
+            avg_per_month.push_back(sum/30);
+            sum = 0;
+        }
     }
 
-    return sum / ((list.size() - 1) * 6);
+    return avg_per_month;
 }
 
 
@@ -62,8 +68,7 @@ int main(int argc, char* argv[]){
         usage_stats.push_back(water.GetRow<int>(i));
     }
     
-    int peak_hour = cal_peak(usage_stats); //Calculated based of the whole year usage
-    float avg_usage = cal_avg(usage_stats); //Calculated based of the whole year average
+    int peak_hour = cal_peak(usage_stats);              //Calculated based of the whole year usage
+    vector<float> avg_usage = cal_avg(usage_stats);     //Calculates per month average usage
     
-        
 }
