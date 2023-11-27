@@ -109,19 +109,46 @@ string find_name(string str){
 }
 
 
-vector<int> cal_bill(vector<int> usage, vector<vector<float>> price, string file_type){
-    vector<int> out;
-    int i;
+vector<float> cal_bill(vector<vector<int>> usage, vector<int> usage_per_month, vector<vector<float>> price, vector<int> peak, string file_type){
+    vector<float> out;
     if(file_type == "Gas"){
-        i = 0;
+        for(int j = 0; j < 12; j++){
+            out.push_back(price[0][j] * usage_per_month[j]);
+        }
     } else if(file_type == "Electricity"){
-        i = 1;
+        float temp = 0;
+        for(int j = 0; j < 360; j++){
+            for(int i = 0; i < 6; i++){
+                if(peak[usage[j][1] - 1] == i){
+                    temp += (price[1][usage[j][1] - 1] * 1.25 * usage[j][i + HOUR_OFFSET]);
+                }
+                else {
+                    temp += (price[1][usage[j][1] - 1] * usage[j][i + HOUR_OFFSET]);
+                }
+            }
+            if((j + 1) % 30 == 0){
+                out.push_back(temp);
+                temp = 0;
+            }
+        }
     } else if(file_type == "Water"){
-        i = 2;
+        float temp = 0;
+        for(int j = 0; j < 360; j++){
+            for(int i = 0; i < 6; i++){
+                if(peak[usage[j][1] - 1] == i){
+                    temp += (price[2][usage[j][1] - 1] * 1.25 * usage[j][i + HOUR_OFFSET]);
+                }
+                else {
+                    temp += (price[2][usage[j][1] - 1] * usage[j][i + HOUR_OFFSET]);
+                }
+            }
+            if((j + 1) % 30 == 0){
+                out.push_back(temp);
+                temp = 0;
+            }
+        }
     }
-    for(int j = 0; j < 12; j++){
-        out.push_back(price[i][j] * usage[j]);
-    }
+    
 
     return out;    
 }
@@ -140,7 +167,7 @@ int main(int argc, char* argv[]){
     vector<int> peak_hour = cal_peak(usage_stats);              //Calculated per month peak hour
     vector<float> avg_usage = cal_avg(usage_stats);     //Calculates per month average usage
     vector<int> total_usage = cal_usage(usage_stats);
-    vector<int> total_price = cal_bill(total_usage, prices, file_name);
+    vector<float> total_price = cal_bill(usage_stats, total_usage, prices, peak_hour, file_name);
 
     string all_avg = "";
     string all_hour = "";
