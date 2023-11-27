@@ -14,4 +14,4 @@ bills.o: counter.o bills.cpp
 
 .PHONY: clean
 clean:
-	rm -f counter.o bills.o building.o main.o 
+	rm -f counter.o bills.o building.o main.o log.txt
