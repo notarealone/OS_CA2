@@ -142,15 +142,7 @@ int main(int argc, char* argv[]){
         cout << "\n\n"; 
         cout << BOLD_GREEN << "Building Name : " << building_requests[i] << EFFECT_END << endl;
         create_tables(buffer, resource_requests);
-        //buildings_merged += buffer + "~"; 
-        
-    }
-    //buildings_merged.erase(buildings_merged.size()-1, buildings_merged.size());
-
-    //cout << buildings_merged << endl;
-
-
-
+    } 
 
     return 0;
 }
@@ -223,8 +215,6 @@ void create_tables(string buf, vector<string> requests){
         aoptions.padding = 0;
         aoptions.alignment = nullptr;
         aoptions.style = tables::style_double;
-        // or with C++20:
-        // tables::options aoptions{.headerrow = true, .headercolumn = true};
 
         cout << UNDERLINED_WHITE << requests[i] << " Bill :" << EFFECT_END << endl;
         tables::array(array, headerrow, headercolumn, aoptions);
