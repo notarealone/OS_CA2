@@ -70,6 +70,16 @@ int main(int argc, char* argv[]){
     getline(cin, input_line);
     vector<string> building_requests = get_requests(input_line); //Assumption -> resource and building requests are mapped 1 by 1
 
+    //Creating Named Pipes
+    string named_pipes = "named_pipe";
+    for(int i = 0; i < building_requests.size(); i++){
+        string pipe_path = named_pipes + to_string(i);
+        if(mkfifo(const_cast<char*>(pipe_path.c_str()), 0666) == -1){
+            cout << "FIFO error \n";
+            exit(EXIT_FAILURE);
+        }
+    }
+
     //Creating child_processe and pipe for loading resource prices
     int bills_pipe[2];
     if(pipe(bills_pipe) == -1){
@@ -80,7 +90,9 @@ int main(int argc, char* argv[]){
         close(bills_pipe[READ_PIPE]);
         dup2(bills_pipe[WRITE_PIPE], STDOUT_FILENO);
         char* exec_path = const_cast<char*>("./bills.o");
-        char* exec_arg[] = {NULL};
+        char pipes_num[10];
+        sprintf(pipes_num, "%ld", building_requests.size());
+        char* exec_arg[] = {const_cast<char*> (pipes_num), NULL};
         execvp(exec_path, exec_arg);
     }
     else{
@@ -90,6 +102,7 @@ int main(int argc, char* argv[]){
     //Creating child processes and their pipes for each requested building
     int main_pipes[building_requests.size()][2];
     for(int i = 0; i < building_requests.size(); i++){
+        string building_num = to_string(i);
         if(pipe(main_pipes[i]) == -1){
             exit(EXIT_FAILURE);
         }
@@ -99,17 +112,17 @@ int main(int argc, char* argv[]){
             dup2(main_pipes[i][WRITE_PIPE], STDOUT_FILENO);
             if(resource_requests.size() == 1){
                 char* exec_path = const_cast<char*>("./building.o");
-                char* exec_arg[] = {const_cast<char*>(building_requests[i].c_str()), const_cast<char*>(resource_requests[0].c_str()), NULL};
+                char* exec_arg[] = {const_cast<char*>(building_requests[i].c_str()), const_cast<char*>(resource_requests[0].c_str()), const_cast<char*>(building_num.c_str()),NULL};
                 execvp(exec_path, exec_arg);
             }
             else if(resource_requests.size() == 2){
                 char* exec_path = const_cast<char*>("./building.o");
-                char* exec_arg[] = {const_cast<char*>(building_requests[i].c_str()), const_cast<char*>(resource_requests[0].c_str()), const_cast<char*>(resource_requests[1].c_str()), NULL};
+                char* exec_arg[] = {const_cast<char*>(building_requests[i].c_str()), const_cast<char*>(resource_requests[0].c_str()), const_cast<char*>(resource_requests[1].c_str()), const_cast<char*>(building_num.c_str()),NULL};
                 execvp(exec_path, exec_arg);
             }
             else {
                 char* exec_path = const_cast<char*>("./building.o");
-                char* exec_arg[] = {const_cast<char*>(building_requests[i].c_str()), const_cast<char*>(resource_requests[0].c_str()), const_cast<char*>(resource_requests[1].c_str()),  const_cast<char*>(resource_requests[2].c_str()), NULL};
+                char* exec_arg[] = {const_cast<char*>(building_requests[i].c_str()), const_cast<char*>(resource_requests[0].c_str()), const_cast<char*>(resource_requests[1].c_str()),  const_cast<char*>(resource_requests[2].c_str()), const_cast<char*>(building_num.c_str()),NULL};
                 execvp(exec_path, exec_arg);
             }
         }
@@ -118,10 +131,12 @@ int main(int argc, char* argv[]){
         }
     }
 
-    char buffer[BUFFER_LEN];
+    string buffer(BUFFER_LEN, '\0');
 
     for(int i = 0; i < building_requests.size(); i++){
-        //TO DO
+        int bytes_read = read(main_pipes[i][READ_PIPE], buffer.data(), BUFFER_LEN);
+        buffer.resize(bytes_read);
+        cout << buffer << endl;
     }
 
 

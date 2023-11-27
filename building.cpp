@@ -20,19 +20,26 @@
 using namespace std;
 
 int main(int argc, char* argv[]){
-    string building_name = argv[1];
+    string building_name = string(argv[1]);
     string folder_path = "buildings/";
     vector<string> csv_path;
-
     for(int i = 2; i < argc; i++){
         csv_path.push_back(folder_path + building_name);
     }
+    string buffer(BUFFER_LEN, '\0');
+    //Reading Prices from bills.o process
+    string temp_name = argv[argc - 1];
+    string pipe_name = "named_pipe" + temp_name;
+    int fd = open(pipe_name.c_str(), O_RDONLY);
+    int bytes_read = read(fd, buffer.data(), BUFFER_LEN);
+    close(fd);
+    unlink(pipe_name.c_str());
+    buffer.resize(bytes_read);
 
-    //TO DO
-
+    
     int building_pipes[argc - 2][2];
     pid_t pid;
-    for(int i = 2; i < argc; i++){
+    for(int i = 2; i < argc - 1; i++){
         if(pipe(building_pipes[i]) == -1){
             exit(EXIT_FAILURE);
         }
