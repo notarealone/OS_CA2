@@ -1,22 +1,18 @@
 CC = g++ -std=c++17
 
 
-building.out: bills.out building.cpp
-	$(CC) building.cpp -o building.out
+counter.o: counter.cpp
+	$(CC) counter.cpp -o counter.o
 
+building.o: bills.o counter.o building.cpp 
+	$(CC) building.cpp -o building.o
 
-bills.o: csvReader.o bills.cpp
-	$(CC) -c bills.cpp -o bills.o
+bills.o: counter.o bills.cpp
+	$(CC) bills.cpp -o bills.o
 
-csvReader.o: csvReader.cpp csvReader.h 
-	$(CC) -c csvReader.cpp
-
-bills.out: bills.o csvReader.o
-	$(CC) bills.o csvReader.o -o bills.out
-
-main.out: main.cpp bills.out building.out
-	$(CC) main.cpp -o main.out
+main.o: main.cpp bills.o building.o
+	$(CC) main.cpp -o main.o
 
 .PHONY: clean
 clean:
-	rm -f bills.out csvReader.o bills.o building.out main.out
+	rm -f counter.o bills.o building.o main.o 
