@@ -23,7 +23,13 @@ vector<vector<float>> msg_parser(string msg){
         while((pos = msg.find("#")) != string::npos){
             temp_prices.push_back(stof(msg.substr(0, pos)));
             msg.erase(0, pos+1);
-            if(temp_prices.size() == 12) break;
+            if(temp_prices.size() == 12) {
+                cerr << temp_prices.size() << endl;
+                break;
+            }
+        }
+        if(i == 2){
+            temp_prices.push_back(stof(msg));
         }
         prices.push_back(temp_prices);
     }
