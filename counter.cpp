@@ -81,6 +81,22 @@ vector<float> cal_avg(vector<vector<int>> list){
     return avg_per_month;
 }
 
+vector<int> cal_usage(vector<vector<int>> list){
+    vector<int> usage;
+    int temp = 0;
+    for(int i = 0; i < list.size(); i++){
+        for(int j = 0; j < 6; j++){
+            temp += list[i][j + HOUR_OFFSET];
+        }
+        if((i+1)%30 == 0){
+            usage.push_back(temp);
+            temp = 0;
+        }
+    }
+
+    return usage;
+}
+
 
 int main(int argc, char* argv[]){
     rapidcsv::Document counter(argv[0], rapidcsv::LabelParams(-1, -1));
@@ -93,15 +109,25 @@ int main(int argc, char* argv[]){
     
     vector<int> peak_hour = cal_peak(usage_stats);              //Calculated per month peak hour
     vector<float> avg_usage = cal_avg(usage_stats);     //Calculates per month average usage
+    vector<int> total_usage = cal_usage(usage_stats);
     string all_avg = "";
     string all_hour = "";
+    string all_usage = "";
     for(int i = 0; i < 12; i++){
         all_avg += to_string(avg_usage[i]) + "/"; 
     }
+    all_avg.erase(all_avg.size()-1, all_avg.size());
     for(int i = 0; i < 12; i++){
         all_hour += to_string(peak_hour[i]) + "/";
     }
+    all_hour.erase(all_hour.size()-1, all_hour.size());
+    for(int i = 0; i < 12; i++){
+        all_usage += to_string(total_usage[i]) + "/";
+    }
+    all_usage.erase(all_usage.size()-1, all_usage.size());
 
 
-    cout << all_hour + "#" + all_avg; 
+
+
+    cout << all_usage + "#" + all_hour + "#" + all_avg; 
 }
