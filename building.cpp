@@ -20,12 +20,13 @@
 using namespace std;
 
 int main(int argc, char* argv[]){
-    string building_name = string(argv[1]);
+    string building_name = string(argv[0]);
     string folder_path = "buildings/";
     vector<string> csv_path;
-    for(int i = 2; i < argc; i++){
-        csv_path.push_back(folder_path + building_name);
+    for(int i = 1; i < argc - 1; i++){
+        csv_path.push_back(folder_path + building_name + "/" + string(argv[i]) + ".csv");
     }
+    
     string buffer(BUFFER_LEN, '\0');
     //Reading Prices from bills.o process
     string temp_name = argv[argc - 1];
@@ -36,10 +37,10 @@ int main(int argc, char* argv[]){
     unlink(pipe_name.c_str());
     buffer.resize(bytes_read);
 
-    
+    cout << buffer;
     int building_pipes[argc - 2][2];
     pid_t pid;
-    for(int i = 2; i < argc - 1; i++){
+    for(int i = 0; i < argc - 2; i++){
         if(pipe(building_pipes[i]) == -1){
             exit(EXIT_FAILURE);
         }
@@ -48,9 +49,9 @@ int main(int argc, char* argv[]){
             close(building_pipes[i][READ_PIPE]);
             dup2(building_pipes[i][WRITE_PIPE], STDOUT_FILENO);
             char* exec_path = const_cast<char*>("./counter.o");
-            char* exec_arg[] = {const_cast<char*>(argv[i]), NULL};
+            char* exec_arg[] = {const_cast<char*>(csv_path[i].c_str()), const_cast<char*>(buffer.c_str()), NULL};
             execvp(exec_path, exec_arg);
-            exit(EXIT_FAILURE); // runs only when exec() runs into a problem
+                exit(EXIT_FAILURE); // runs only when exec() runs into a problem
         }
     }
 
