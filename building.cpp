@@ -17,6 +17,8 @@
 #define MAX_LENGTH 100
 #define BUFFER_LEN 2048
 
+#define BIG_BUFFER_LEN 4096
+
 using namespace std;
 
 int main(int argc, char* argv[]){
@@ -37,7 +39,6 @@ int main(int argc, char* argv[]){
     unlink(pipe_name.c_str());
     buffer.resize(bytes_read);
 
-    cout << buffer;
     int building_pipes[argc - 2][2];
     pid_t pid;
     for(int i = 0; i < argc - 2; i++){
@@ -54,6 +55,15 @@ int main(int argc, char* argv[]){
                 exit(EXIT_FAILURE); // runs only when exec() runs into a problem
         }
     }
+    string temp_buffer = "";
+    for(int i = 0; i < argc - 2; i++){
+        buffer.resize(BUFFER_LEN);
+        bytes_read = read(building_pipes[i][READ_PIPE], buffer.data(), BUFFER_LEN);
+        close(building_pipes[i][READ_PIPE]);
+        buffer.resize(bytes_read);
+        temp_buffer = temp_buffer + buffer + "|";
+    }
+    temp_buffer.erase(temp_buffer.size()-1,temp_buffer.size());
+    cout << temp_buffer; //Sends data back to parent process through STDOUT fd
 
-    //TO DO
 }

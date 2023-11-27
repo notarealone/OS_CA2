@@ -132,12 +132,16 @@ int main(int argc, char* argv[]){
     }
 
     string buffer(BUFFER_LEN, '\0');
-
+    string buildings_merged = "";
     for(int i = 0; i < building_requests.size(); i++){
         int bytes_read = read(main_pipes[i][READ_PIPE], buffer.data(), BUFFER_LEN);
+        close(main_pipes[i][READ_PIPE]);
         buffer.resize(bytes_read);
-        cout << buffer << endl;
+        buildings_merged += buffer + "~";
     }
+    buildings_merged.erase(buildings_merged.size()-1, buildings_merged.size());
+
+    cout << buildings_merged << endl;
 
 
     return 0;
