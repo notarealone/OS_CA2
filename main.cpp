@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <filesystem>
+#include "tables.hpp"
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -23,6 +24,7 @@ namespace fs = std::filesystem;
 #define MAX_LENGTH 100
 #define BUFFER_LEN 2048
 
+void create_tables(string buf, vector<string> requests);
 
 void extract_buildings(vector<string>&buildings, string path){
     for (const auto & entry : fs::directory_iterator(path)){
@@ -137,12 +139,96 @@ int main(int argc, char* argv[]){
         int bytes_read = read(main_pipes[i][READ_PIPE], buffer.data(), BUFFER_LEN);
         close(main_pipes[i][READ_PIPE]);
         buffer.resize(bytes_read);
-        buildings_merged += buffer + "~";
+        cout << "\n\n"; 
+        cout << BOLD_GREEN << "Building Name : " << building_requests[i] << EFFECT_END << endl;
+        create_tables(buffer, resource_requests);
+        //buildings_merged += buffer + "~"; 
+        
     }
-    buildings_merged.erase(buildings_merged.size()-1, buildings_merged.size());
+    //buildings_merged.erase(buildings_merged.size()-1, buildings_merged.size());
 
-    cout << buildings_merged << endl;
+    //cout << buildings_merged << endl;
+
+
 
 
     return 0;
+}
+
+void create_tables(string buf, vector<string> requests){
+    vector<string> bills;
+    int pos = 0;
+    while((pos = buf.find("|")) != string::npos){
+        bills.push_back(buf.substr(0, pos));
+        buf.erase(0, pos+1);
+    }
+    bills.push_back(buf);
+
+    string all_bill, all_usage, all_peak, all_avg;
+
+    for(int i = 0; i < bills.size(); i++){
+        pos = bills[i].find("#");
+        all_bill = bills[i].substr(0, pos);
+        bills[i].erase(0, pos+1);
+        pos = bills[i].find("#");
+        all_usage = bills[i].substr(0, pos);
+        bills[i].erase(0, pos+1);
+        pos = bills[i].find("#");
+        all_peak = bills[i].substr(0, pos);
+        bills[i].erase(0, pos+1);
+        pos = bills[i].find("#");
+        all_avg = bills[i].substr(0, pos);
+        bills[i].erase(0, pos+1);
+
+        vector<string> bill, usage, peaks, avgs;
+        while((pos = all_bill.find("/")) != string::npos){
+            bill.push_back((all_bill.substr(0, pos-5)));
+            all_bill.erase(0, pos+1);
+        }
+        bill.push_back((all_bill.substr(0, all_bill.size()-5)));
+
+
+        while((pos = all_usage.find("/")) != string::npos){
+            usage.push_back((all_usage.substr(0, pos)));
+            all_usage.erase(0, pos+1);
+        }
+        usage.push_back((all_usage));
+
+        while((pos = all_peak.find("/")) != string::npos){
+            peaks.push_back((all_peak.substr(0, pos)));
+            all_peak.erase(0, pos+1);
+        }
+        peaks.push_back((all_peak));
+
+        while((pos = all_avg.find("/")) != string::npos){
+            avgs.push_back((all_avg.substr(0, pos-5)));
+            all_avg.erase(0, pos+1);
+        }
+        avgs.push_back((all_avg.substr(0, all_avg.size()-5)));
+
+        string headerrow[] = {"Months", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+        string headercolumn[] = {"Debt($)", "Usage", "Peak Hour", "Avg(perDay)"};
+
+        vector<vector<string>> array;
+        array.push_back(bill);
+        array.push_back(usage);
+        array.push_back(peaks);
+        array.push_back(avgs);
+
+        tables::options aoptions;
+        aoptions.headerrow = true;
+        aoptions.headercolumn = true;
+        aoptions.check = false;
+        aoptions.cellborder = true;
+        aoptions.padding = 0;
+        aoptions.alignment = nullptr;
+        aoptions.style = tables::style_double;
+        // or with C++20:
+        // tables::options aoptions{.headerrow = true, .headercolumn = true};
+
+        cout << UNDERLINED_WHITE << requests[i] << " Bill :" << EFFECT_END << endl;
+        tables::array(array, headerrow, headercolumn, aoptions);
+        cout << "\n";
+    }
+
 }
