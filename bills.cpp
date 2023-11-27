@@ -28,6 +28,7 @@ int main(int argc, char* argv[]){
     for(int j = 0; j < 12; j++){
         temp_out = temp_out + "#" + water_price[j];
     }
+    temp_out.erase(0, 1); //erases the first #
     for(int i = 0; i < pipes_num; i++){
         string pipe_name = "named_pipe" + to_string(i);
         int fd = open(pipe_name.c_str(), O_WRONLY);
