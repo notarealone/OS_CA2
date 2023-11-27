@@ -24,7 +24,6 @@ vector<vector<float>> msg_parser(string msg){
             temp_prices.push_back(stof(msg.substr(0, pos)));
             msg.erase(0, pos+1);
             if(temp_prices.size() == 12) {
-                cerr << temp_prices.size() << endl;
                 break;
             }
         }
