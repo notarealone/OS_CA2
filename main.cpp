@@ -8,6 +8,7 @@
 #include <fcntl.h>
 #include <filesystem>
 #include "tables.hpp"
+#include <fstream> //only added for logging
 
 using namespace std;
 namespace fs = std::filesystem;
@@ -25,6 +26,12 @@ namespace fs = std::filesystem;
 #define BUFFER_LEN 2048
 
 void create_tables(string buf, vector<string> requests);
+
+void make_log(string msg){
+    ofstream log_file("log.txt", std::ios::out | std::ios::app);
+    log_file << msg + "\n";
+    log_file.close();
+}
 
 void extract_buildings(vector<string>&buildings, string path){
     for (const auto & entry : fs::directory_iterator(path)){
@@ -59,6 +66,7 @@ int main(int argc, char* argv[]){
     struct stat sb;
     vector<string> Buildings;
     extract_buildings(Buildings, buildings_path);
+    make_log("Buildings Found");
 
     cout << BOLD_YELLOW << "Amount of Buildings Found : " << EFFECT_END << BOLD_GREEN << Buildings.size() << EFFECT_END << endl << endl;
     cout << BOLD_RED << "Buildings' Names are as follow : " << EFFECT_END << endl;
@@ -81,7 +89,7 @@ int main(int argc, char* argv[]){
             exit(EXIT_FAILURE);
         }
     }
-
+    make_log("Main process created Named Pipes for bills and buildings processes");
     //Creating child_processe and pipe for loading resource prices
     int bills_pipe[2];
     if(pipe(bills_pipe) == -1){
@@ -95,6 +103,7 @@ int main(int argc, char* argv[]){
         char pipes_num[10];
         sprintf(pipes_num, "%ld", building_requests.size());
         char* exec_arg[] = {const_cast<char*> (pipes_num), NULL};
+        make_log("Executing a child process for bills");
         execvp(exec_path, exec_arg);
     }
     else{
@@ -108,6 +117,7 @@ int main(int argc, char* argv[]){
         if(pipe(main_pipes[i]) == -1){
             exit(EXIT_FAILURE);
         }
+        make_log("Executing a child process for Building");
         pid = fork();
         if(pid == 0){
             close(main_pipes[i][READ_PIPE]);
@@ -136,6 +146,7 @@ int main(int argc, char* argv[]){
     string buffer(BUFFER_LEN, '\0');
     string buildings_merged = "";
     for(int i = 0; i < building_requests.size(); i++){
+        make_log("Reading from a Buidling through pipes to child process to create Tables");
         int bytes_read = read(main_pipes[i][READ_PIPE], buffer.data(), BUFFER_LEN);
         close(main_pipes[i][READ_PIPE]);
         buffer.resize(bytes_read);

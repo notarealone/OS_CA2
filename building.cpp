@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <filesystem>
+#include <fstream>
 #include "rapidcsv.h"
 
 #define ARG_OFFSET 1
@@ -18,6 +19,13 @@
 #define BUFFER_LEN 4096
 
 using namespace std;
+
+void make_log(string msg){
+    ofstream log_file("log.txt", std::ios::out | std::ios::app);
+    log_file << msg + "\n";
+    log_file.close();
+}
+
 
 int main(int argc, char* argv[]){
     string building_name = string(argv[0]);
@@ -31,6 +39,7 @@ int main(int argc, char* argv[]){
     //Reading Prices from bills.o process
     string temp_name = argv[argc - 1];
     string pipe_name = "named_pipe" + temp_name;
+    make_log("Reading from a bills through named pipes to building to get prices");
     int fd = open(pipe_name.c_str(), O_RDONLY);
     int bytes_read = read(fd, buffer.data(), BUFFER_LEN);
     close(fd);
@@ -43,6 +52,7 @@ int main(int argc, char* argv[]){
         if(pipe(building_pipes[i]) == -1){
             exit(EXIT_FAILURE);
         }
+        make_log("Executing a child process for csv operations");
         pid = fork();
         if(pid == 0){
             close(building_pipes[i][READ_PIPE]);
@@ -55,6 +65,7 @@ int main(int argc, char* argv[]){
     }
     string temp_buffer = "";
     for(int i = 0; i < argc - 2; i++){
+        make_log("reading from pipe of child process that does csv operations");
         buffer.resize(BUFFER_LEN);
         bytes_read = read(building_pipes[i][READ_PIPE], buffer.data(), BUFFER_LEN);
         close(building_pipes[i][READ_PIPE]);
