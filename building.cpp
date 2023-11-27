@@ -15,9 +15,7 @@
 #define READ_PIPE 0
 
 #define MAX_LENGTH 100
-#define BUFFER_LEN 2048
-
-#define BIG_BUFFER_LEN 4096
+#define BUFFER_LEN 4096
 
 using namespace std;
 
