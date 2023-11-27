@@ -98,8 +98,38 @@ vector<int> cal_usage(vector<vector<int>> list){
 }
 
 
+string find_name(string str){
+    int pos = 0;
+    str.erase(str.size()-4, str.size());
+    while((pos = str.find("/")) != string::npos){
+        
+        str.erase(0, pos+1);
+    }
+    return str;
+}
+
+
+vector<int> cal_bill(vector<int> usage, vector<vector<float>> price, string file_type){
+    vector<int> out;
+    int i;
+    if(file_type == "Gas"){
+        i = 0;
+    } else if(file_type == "Electricity"){
+        i = 1;
+    } else if(file_type == "Water"){
+        i = 2;
+    }
+    for(int j = 0; j < 12; j++){
+        out.push_back(price[i][j] * usage[j]);
+    }
+
+    return out;    
+}
+
+
 int main(int argc, char* argv[]){
     rapidcsv::Document counter(argv[0], rapidcsv::LabelParams(-1, -1));
+    string file_name = find_name(string(argv[0]));
     vector<vector<int>> usage_stats;
     vector<vector<float>> prices = msg_parser(argv[1]);
     
@@ -110,9 +140,12 @@ int main(int argc, char* argv[]){
     vector<int> peak_hour = cal_peak(usage_stats);              //Calculated per month peak hour
     vector<float> avg_usage = cal_avg(usage_stats);     //Calculates per month average usage
     vector<int> total_usage = cal_usage(usage_stats);
+    vector<int> total_price = cal_bill(total_usage, prices, file_name);
+
     string all_avg = "";
     string all_hour = "";
     string all_usage = "";
+    string all_bill = "";
     for(int i = 0; i < 12; i++){
         all_avg += to_string(avg_usage[i]) + "/"; 
     }
@@ -125,9 +158,13 @@ int main(int argc, char* argv[]){
         all_usage += to_string(total_usage[i]) + "/";
     }
     all_usage.erase(all_usage.size()-1, all_usage.size());
+    for(int i = 0; i < 12; i++){
+        all_bill += to_string(total_price[i]) + "/";
+    }
+    all_bill.erase(all_bill.size()-1, all_bill.size());
 
 
 
 
-    cout << all_usage + "#" + all_hour + "#" + all_avg; 
+    cout << all_bill + "#" + all_usage + "#" + all_hour + "#" + all_avg; 
 }
